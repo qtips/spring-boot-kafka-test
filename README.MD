@@ -1,7 +1,7 @@
-#Prerequisite
+# Prerequisite
 Install and run zookeeper and kafka server https://kafka.apache.org/quickstart
 
-#Run
+# Run
 Go to http://localhost:9011/kafka/publish?message="hello" to produce and consume message
 
 
