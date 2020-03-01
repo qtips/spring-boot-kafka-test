@@ -4,6 +4,7 @@ import com.github.javafaker.Faker;
 import no.ainiq.kafkademo.app.HobbyNotificationService;
 import no.ainiq.kafkademo.app.HobbyUser;
 import no.ainiq.kafkademo.app.repository.HobbyUserRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,9 +17,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-import static org.awaitility.Awaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(value = {
         "kafka-enabled=false",
@@ -44,27 +44,44 @@ public class ConcurrentPostgresTest {
     @Autowired
     HobbyNotificationService service;
 
-    @Test
-    void notification() throws InterruptedException {
+    @Test()
+    @DisplayName("4 threads try to notify each user simultaneously")
+    void test_for_update() throws InterruptedException {
         List<String> names = names(10);
         names.forEach(n -> repository.save(HobbyUser.newInstance(n)));
         ExecutorService executorService = Executors.newFixedThreadPool(4);
 
         List<Callable<Object>> callables = new ArrayList<>();
-        callables.add(Executors.callable(() -> names.forEach(service::notify)));
-        callables.add(Executors.callable(() -> names.forEach(service::notify)));
-        callables.add(Executors.callable(() -> names.forEach(service::notify)));
-        callables.add(Executors.callable(() -> names.forEach(service::notify)));
+        callables.add(Executors.callable(() -> names.forEach(service::notifyUser)));
+        callables.add(Executors.callable(() -> names.forEach(service::notifyUser)));
+        callables.add(Executors.callable(() -> names.forEach(service::notifyUser)));
+        callables.add(Executors.callable(() -> names.forEach(service::notifyUser)));
 
         executorService.invokeAll(callables);
-        
-        System.out.println("STARTED!!!");
-        await().atMost(10, TimeUnit.SECONDS)
-                .pollInterval(3, TimeUnit.SECONDS)
-                .until(() -> {
-                    HobbyUser lastUser = repository.findByName(names.get(names.size() - 1));
-                    return lastUser.getTries() == 3 || lastUser.getStatus() == HobbyUser.NotificationStatus.SENT;
-                });
+
+        System.out.println("RESULTS:");
+        repository.findAll().forEach(System.out::println);
+
+        assertThat(repository.findByStatus(HobbyUser.NotificationStatus.READY)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("4 threads notify 1 ready user at a time - skipping locked users by other threads")
+    void test_skip_locked() throws InterruptedException {
+        List<String> names = names(10);
+        names.forEach(n -> repository.save(HobbyUser.newInstance(n)));
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+
+        List<Callable<Object>> callables = new ArrayList<>();
+        for (int i = 0; i < 40; i++) {
+            callables.add(Executors.callable(() -> service.notifyNextUser()));
+        }
+        executorService.invokeAll(callables);
+
+        System.out.println("RESULTS:");
+        repository.findAll().forEach(System.out::println);
+
+        assertThat(repository.findByStatus(HobbyUser.NotificationStatus.READY)).isEmpty();
 
     }
 

@@ -20,12 +20,26 @@ public class HobbyNotificationService {
     }
 
     @Transactional
-    public void notify(String name) {
+    public void notifyUser(String name) {
         HobbyUser user = repository.findByNameAndStatus(name, HobbyUser.NotificationStatus.READY.name());
         if (user == null) {
             LOGGER.info("User with name {} already sent or failed", name);
             return;
         }
+        notify(user);
+    }
+
+    @Transactional
+    public void notifyNextUser() {
+        HobbyUser user = repository.findReady();
+        if (user == null) {
+            LOGGER.info("no users left to process");
+            return;
+        }
+        notify(user);
+    }
+
+    private void notify(HobbyUser user) {
         try {
             sendNotification(user);
             user.success();

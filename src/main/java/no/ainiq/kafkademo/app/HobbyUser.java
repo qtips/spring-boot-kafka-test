@@ -59,6 +59,17 @@ public class HobbyUser {
 
     }
 
+    @Override
+    public String toString() {
+        return "HobbyUser{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", hobbies=" + hobbies +
+                ", status=" + status +
+                ", tries=" + tries +
+                '}';
+    }
+
     public enum NotificationStatus {
         READY, SENT, FAILED
     }
