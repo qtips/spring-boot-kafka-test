@@ -1,6 +1,6 @@
 package no.ainiq.kafkademo.app;
 
-import no.ainiq.kafkademo.app.repository.UsersRepository;
+import no.ainiq.kafkademo.app.repository.HobbyUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,16 +14,16 @@ public class Consumer {
 
     private final Logger logger = LoggerFactory.getLogger(Producer.class);
 
-    private UsersRepository usersRepository;
+    private HobbyUserRepository hobbyUserRepository;
 
     @Autowired
-    public Consumer(UsersRepository usersRepository) {
-        this.usersRepository = usersRepository;
+    public Consumer(HobbyUserRepository hobbyUserRepository) {
+        this.hobbyUserRepository = hobbyUserRepository;
     }
 
     @KafkaListener(topics = "users", groupId = "group_id")
     public void consume(String message) {
         logger.info(String.format("#### -> Consumed message -> %s", message));
-        usersRepository.save(Users.newInstance(message, 20));
+        hobbyUserRepository.save(HobbyUser.newInstance(message, 20));
     }
 }

@@ -1,6 +1,6 @@
 package no.ainiq.kafkademo;
 
-import no.ainiq.kafkademo.app.repository.UsersRepository;
+import no.ainiq.kafkademo.app.repository.HobbyUserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -29,7 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 @Testcontainers
 @AutoConfigureMockMvc
 @EmbeddedKafka(bootstrapServersProperty = "spring.kafka.bootstrap-servers", //setter oppgitt property til embedded kafka url
-        topics = "my-test-topic",
         brokerProperties = "log.dir=tmp/embedded-kafka",
         partitions = 1)
 class EmbeddedKafkaTest {
@@ -43,7 +42,7 @@ class EmbeddedKafkaTest {
     MockMvc mvc;
 
     @Autowired
-    UsersRepository repository;
+    HobbyUserRepository repository;
 
     @Test
     void fromRestToKafkaToDB() throws Exception {
@@ -52,6 +51,6 @@ class EmbeddedKafkaTest {
         await().atMost(10, TimeUnit.SECONDS)
                 .pollInterval(3, TimeUnit.SECONDS)
                 .until(() -> repository.findByName("hei") != null);
-        assertThat(repository.findByName("hei").getAge()).isEqualTo(20);
+        assertThat(repository.findByName("hei").getHobbies()).isEqualTo(20);
     }
 }

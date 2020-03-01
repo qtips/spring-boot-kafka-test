@@ -1,7 +1,7 @@
 package no.ainiq.kafkademo;
 
-import no.ainiq.kafkademo.app.Users;
-import no.ainiq.kafkademo.app.repository.UsersRepository;
+import no.ainiq.kafkademo.app.HobbyUser;
+import no.ainiq.kafkademo.app.repository.HobbyUserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.datasource.username=foo",
         "spring.datasource.password=secret",
         "spring.datasource.driverClassName=org.testcontainers.jdbc.ContainerDatabaseDriver",
-        "spring.jpa.show-sql=true",
+        "spring.jpa.show-sql=false",
 })
 @Testcontainers
 public class PostgresTestcontainerTest {
@@ -30,11 +30,14 @@ public class PostgresTestcontainerTest {
 
 
     @Autowired
-    UsersRepository repository;
+    HobbyUserRepository repository;
 
+                                           
     @Test
     void test() {
-        repository.save(Users.newInstance("Ole", 10));
-        assertThat(repository.findByName("Ole").getAge()).isEqualTo(10);
+        repository.save(HobbyUser.newInstance("Ole", 10));
+        assertThat(repository.findByName("Ole").getHobbies()).isEqualTo(10);
     }
+
+
 }
