@@ -18,8 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.datasource.password=secret",
         "spring.datasource.driverClassName=org.testcontainers.jdbc.ContainerDatabaseDriver",
         "spring.jpa.show-sql=true",
-        "spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect"
-        //"spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect"
 })
 @Testcontainers
 public class PostgresTestcontainerTest {
@@ -35,7 +33,7 @@ public class PostgresTestcontainerTest {
     UsersRepository repository;
 
     @Test
-    void test() throws Exception {
+    void test() {
         repository.save(Users.newInstance("Ole", 10));
         assertThat(repository.findByName("Ole").getAge()).isEqualTo(10);
     }
